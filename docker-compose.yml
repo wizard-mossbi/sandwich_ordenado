@@ -1,0 +1,65 @@
+#
+# docker-compose file pour le déploiement initial de l'application lbs
+# Documentation complète : https://bitbucket.org/canals5/docker-things
+#
+# ajouter les vhosts des services web dans le fichier /etc/vhosts
+# de la machine hôte :
+# exemple pour le service api.public :
+# 127.0.0.1   api.lbs.local
+# pour accéder à ce service : https://api.lbs.local:10443
+#                      ou   :  http://api.lbs.local:10080
+# accès au service adminer : http://localhost:8080
+# accès au service mysql depuis le container api.public : utiliser le hostname "db"
+
+version: "3"
+networks:
+  lbs_network:
+    driver: bridge
+
+services:
+  api.public:
+    image: canals/php
+    container_name: api.public.lbs.local
+    environment:
+      - VHOST_HOSTNAME=api.lbs.local
+      - VHOST_DOCROOT=/var/www/api
+      - http_proxy=http://www-cache.iutnc.univ-lorraine.fr:3128/
+      - https_proxy=http://www-cache.iutnc.univ-lorraine.fr:3128/
+    ports:
+      - "10080:80"
+      - "10443:443"
+    volumes :
+      - ./api:/var/www/api
+      - ./src:/var/www/src
+    networks:
+      - lbs_network
+    links :
+      - mysql:db
+
+#############################
+# mysql + adminer / can be replaced by mariadb
+#############################
+  mysql:
+    image: mariadb:latest
+    container_name: maria.lbs.local
+    environment:
+      - MYSQL_ROOT_PASSWORD=root123
+      - MYSQL_USER=lbs
+      - MYSQL_PASSWORD=lbs
+      - MYSQL_DATABASE=lbs
+    ports:
+      - "3603:3306"
+    networks:
+      - lbs_network
+    volumes :
+      - ./sql:/var/sql
+
+  adminer:
+     image: adminer
+     container_name: admin.lbs.local
+     ports:
+       - "8080:8080"
+     networks:
+      - lbs_network
+     links:
+       - mysql:db

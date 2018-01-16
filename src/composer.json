@@ -1,0 +1,16 @@
+{
+  "require" :{
+    "slim/slim" : "^3.0",
+    "php" : ">=7.0",
+    "illuminate/database": "^5.5",
+    "ramsey/uuid": "^3.7",
+    "firebase/php-jwt": "^5.0.0"
+  },
+
+  "autoload" : {
+    "psr-4" : {
+      "lbs\\" : "."
+    }
+  }
+
+}
